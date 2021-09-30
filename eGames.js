@@ -133,9 +133,9 @@ function Add_Doc_WithID(){
     
     cloudDB.collection("wrestlers").doc(rollV).set(
         {
-            NameOfStd: nameV,
-            RollNo: Number(rollV),
-            Section: secV,
+            NameOfGamer: nameV,
+            PhoneNo: Number(rollV),
+            IG: secV,
             Gender: genV
         }
     )
@@ -152,14 +152,3 @@ document.getElementById('insertBtn').onclick=function(){
     Add_Doc_WithID();
 }
 
-document.getElementById('selectBtn').onclick=function(){
-
-}
-
-document.getElementById('updateBtn').onclick=function(){
-
-}
-
-document.getElementById('deleteBtn').onclick=function(){
-
-}
