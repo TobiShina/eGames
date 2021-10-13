@@ -152,3 +152,6 @@ document.getElementById('insertBtn').onclick=function(){
     Add_Doc_WithID();
 }
 
+document.getElementById('insertBtn').onclick=function(){
+    swal("Successful!", "Your details is submitted!", "success");
+}
