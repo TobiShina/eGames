@@ -1,61 +1,70 @@
-.bodypage {width: 100%;}
-
-body {background: rgb(238,174,204);
-background: radial-gradient(circle, rgba(238,174,204,1) 50%, rgba(148,170,233,1) 100%);
+.bodypage {
+  width: 100%;
 }
-.navbar{
-    background: rgb(246,5,50);
-    background: radial-gradient(circle, rgba(246,5,50,1) 50%, rgba(0,4,15,1) 100%);
+
+body {
+  background: rgb(238, 174, 204);
+  background: radial-gradient(
+    circle,
+    rgba(238, 174, 204, 1) 50%,
+    rgba(148, 170, 233, 1) 100%
+  );
+}
+.navbar {
+  background: rgb(246, 5, 50);
+  background: radial-gradient(
+    circle,
+    rgba(246, 5, 50, 1) 50%,
+    rgba(0, 4, 15, 1) 100%
+  );
 }
 
 .main1 {
-    
-    margin: auto;
-    position: relative;
-    
-    font-family: 'Oswald', sans-serif
+  margin: auto;
+  position: relative;
+
+  font-family: "Oswald", sans-serif;
 }
 
 .main2 {
-    
-    margin: auto;
-    background-color: #9e9e9e;
-    color: white;
-    padding: 0.5vw
+  margin: auto;
+  background-color: #9e9e9e;
+  color: white;
+  padding: 0.5vw;
 }
 
 .flag {
-    width: 5vw;
-    height: 3vw;
-    position: relative;
-    bottom: 0.5vw
+  width: 5vw;
+  height: 3vw;
+  position: relative;
+  bottom: 0.5vw;
 }
 
 .pt {
-    font-size: 1.5vw
+  font-size: 1.5vw;
 }
 
 table {
-    color: white; border-collapse: collapse; width: 100%;
+  color: white;
+  border-collapse: collapse;
+  width: 100%;
 }
 
-
-
 td {
-    text-align: center
+  text-align: center;
 }
 
 .name {
-    text-align: left
+  text-align: left;
 }
 
 thead {
-    background-color: red;
-    border-bottom: 2px solid red
+  background-color: red;
+  border-bottom: 2px solid red;
 }
 
 .top {
-    background-color: rgb(0, 255, 0, 0.5)
+  background-color: rgb(0, 255, 0, 0.5);
 }
 /*
 .top .logo {
@@ -111,8 +120,8 @@ thead {
 }
 */
 ul {
-    margin: 0px;
-    padding: 0px;
+  margin: 0px;
+  padding: 0px;
 }
 .footer-section {
   background: #151414;
@@ -157,12 +166,12 @@ ul {
   margin-bottom: 30px;
 }
 .footer-logo img {
-    max-width: 200px;
+  max-width: 200px;
 }
 .footer-text p {
   margin-bottom: 14px;
   font-size: 14px;
-      color: #7e7e7e;
+  color: #7e7e7e;
   line-height: 28px;
 }
 .footer-social-icon span {
@@ -170,7 +179,7 @@ ul {
   display: block;
   font-size: 20px;
   font-weight: 700;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   margin-bottom: 20px;
 }
 .footer-social-icon a {
@@ -185,14 +194,14 @@ ul {
   line-height: 38px;
   border-radius: 50%;
 }
-.facebook-bg{
-  background: #3B5998;
+.facebook-bg {
+  background: #3b5998;
 }
-.twitter-bg{
-  background: #55ACEE;
+.twitter-bg {
+  background: #55acee;
 }
-.instagram-bg{
-  background: #DD4B39;
+.instagram-bg {
+  background: #dd4b39;
 }
 .footer-widget-heading h3 {
   color: #fff;
@@ -212,11 +221,11 @@ ul {
 }
 .footer-widget ul li {
   display: inline-block;
-  float: left;
+  /*float: left;*/
   width: 50%;
   margin-bottom: 12px;
 }
-.footer-widget ul li a:hover{
+.footer-widget ul li a:hover {
   color: #ff5e14;
 }
 .footer-widget ul li a {
@@ -230,24 +239,24 @@ ul {
 .subscribe-form input {
   width: 100%;
   padding: 14px 28px;
-  background: #2E2E2E;
-  border: 1px solid #2E2E2E;
+  background: #2e2e2e;
+  border: 1px solid #2e2e2e;
   color: #fff;
 }
 .subscribe-form button {
-    position: absolute;
-    right: 0;
-    background: #ff5e14;
-    padding: 13px 20px;
-    border: 1px solid #ff5e14;
-    top: 0;
+  position: absolute;
+  right: 0;
+  background: #ff5e14;
+  padding: 13px 20px;
+  border: 1px solid #ff5e14;
+  top: 0;
 }
 .subscribe-form button i {
   color: #fff;
   font-size: 22px;
   transform: rotate(-6deg);
 }
-.copyright-area{
+.copyright-area {
   background: #202020;
   padding: 25px 0;
 }
@@ -256,17 +265,95 @@ ul {
   font-size: 14px;
   color: #878787;
 }
-.copyright-text p a{
+.copyright-text p a {
   color: #ff5e14;
 }
 .footer-menu li {
   display: inline-block;
   margin-left: 20px;
 }
-.footer-menu li:hover a{
+.footer-menu li:hover a {
   color: #ff5e14;
 }
 .footer-menu li a {
   font-size: 14px;
   color: #878787;
+}
+
+/* tournament tree */
+
+/*
+ *  Flex Layout Specifics
+*/
+main {
+  display: flex;
+  flex-direction: row;
+}
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 200px;
+  list-style: none;
+  padding: 0;
+}
+.round .spacer {
+  flex-grow: 1;
+}
+.round .spacer:first-child,
+.round .spacer:last-child {
+  flex-grow: 0.5;
+}
+
+.round .game-spacer {
+  flex-grow: 1;
+}
+
+/*
+ *  General Styles
+*/
+body {
+  font-family: sans-serif;
+  font-size: small;
+  padding: 10px;
+  line-height: 1.4em;
+}
+
+li.game {
+  padding-left: 20px;
+}
+
+li.game.winner {
+  font-weight: bold;
+}
+li.game span {
+  float: right;
+  margin-right: 5px;
+}
+
+li.game-top {
+  border-bottom: 1px solid #aaa;
+}
+
+li.game-spacer {
+  border-right: 1px solid #aaa;
+  min-height: 40px;
+}
+
+li.game-bottom {
+  border-top: 1px solid #aaa;
+}
+
+h1 {
+  font-size: 15px;
+
+  @media (min-width: @breakpoint-sm) {
+    font-size: 14px;
+  }
+  @media (min-width: @breakpoint-md) {
+    font-size: 15px;
+  }
+  @media (min-width: @breakpoint-lg) {
+    font-size: 16px;
+  }
 }
