@@ -4,69 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>League Table</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-      }
-
-      .container {
-        width: 90%;
-        margin: 20px auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-
-      h1 {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-
-      table th, table td {
-        text-align: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-      }
-
-      table th {
-        background-color: #007bff;
-        color: white;
-      }
-
-      table tr:nth-child(even) {
-        background-color: #f2f2f2;
-      }
-
-      table tr:hover {
-        background-color: #ddd;
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="eGames.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>eGames League Table</h1>
+    <div class="@container max-[600px]:xs-sky-300 min-[320px]:text-center">
+      <h1 class="text-lg">eGames League Table</h1>
 
-      <table>
-        <thead>
+      <table class="flex flex-col @xs:flex-row">
+        <thead class="flex flex-col @xs:flex-row">
           <tr>
-            <th>Position</th>
-            <th>Player Name</th>
-            <th>Games Played</th>
-            <th>Wins</th>
-            <th>Losses</th>
-            <th>Draws</th>
-            <th>Goals</th>
-            <th>Points</th>
+            <th>No.</th>
+            <th>eGamesNg Player</th>
+            <th>P</th>
+            <th>W</th>
+            <th>L</th>
+            <th>D</th>
+            <th>G</th>
+            <th>P</th>
           </tr>
         </thead>
         <tbody>
@@ -275,9 +230,9 @@
       </table>
     </div>
     <br /><br /><br />
-    <div class="container">
+    <div class="@container max-[600px]:xs-sky-300 min-[320px]:text-center">
       <h1>Fixture List</h1>
-      <table>
+      <table class="">
         <thead>
           <tr>
             <th>Match #</th>
