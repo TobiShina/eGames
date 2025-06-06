@@ -17,6 +17,41 @@ header {
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+header h1 {
+  margin: 0;
+  flex-grow: 1; /* Allows it to take available space */
+}
+
+.auth-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-btn {
+  background-color: #007bff; /* Blue button */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.auth-btn:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+#user-status {
+  font-size: 0.9em;
+  color: #555;
 }
 
 h1,
@@ -36,6 +71,52 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-bottom: 20px;
+}
+
+/* Admin Panel Specifics */
+#admin-panel h3 {
+  color: #28a745; /* Green for admin section headings */
+  margin-top: 25px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.admin-section {
+  margin-bottom: 20px;
+}
+
+.admin-form label {
+  display: inline-block;
+  width: 120px; /* Align labels */
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="datetime-local"],
+.admin-form select {
+  width: calc(100% - 130px); /* Adjust width considering label */
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding in width */
+}
+
+.admin-form button {
+  background-color: #28a745; /* Green button for admin actions */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.admin-form button:hover {
+  background-color: #218838; /* Darker green on hover */
 }
 
 /* League Table */
@@ -93,8 +174,11 @@ main {
 
 .fixture-carousel-container {
   overflow: hidden;
-  width: 100%;
-  max-width: 800px; /* Limit carousel width */
+  width: calc(
+    (250px + 20px) * 10
+  ); /* Exactly 10 cards (250px width + 20px margin per card) */
+  max-width: 100%; /* Ensure it doesn't exceed parent width on smaller screens */
+  margin: 0 auto; /* Center the container */
 }
 
 .fixture-carousel {
@@ -103,15 +187,15 @@ main {
 }
 
 .fixture-card {
-  min-width: 250px; /* Minimum width for each fixture card */
+  width: 250px; /* Fixed width for each fixture card */
+  flex-shrink: 0; /* Prevent shrinking */
   background-color: #f0f8ff; /* Light blue background for fixtures */
   border: 1px solid #cceeff;
   border-radius: 8px;
   padding: 15px;
-  margin: 0 10px;
+  margin: 0 10px; /* 10px margin on each side, so 20px between cards */
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .fixture-card p {
@@ -129,8 +213,8 @@ main {
   color: #6c757d; /* Grey for date/time */
 }
 
-/* Team Form */
-#team-form-list {
+/* Player Form */
+#player-form-list {
   display: grid;
   grid-template-columns: repeat(
     auto-fit,
@@ -140,7 +224,7 @@ main {
   margin-top: 15px;
 }
 
-.team-form-item {
+.player-form-item {
   background-color: #f8f9fa; /* Light grey background */
   border: 1px solid #e2e6ea;
   border-radius: 8px;
@@ -151,7 +235,7 @@ main {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.team-form-item strong {
+.player-form-item strong {
   flex-shrink: 0; /* Prevent team name from shrinking */
   color: #0056b3; /* Darker blue for team name */
 }
@@ -193,6 +277,23 @@ footer {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+  header h1 {
+    font-size: 1.5em;
+  }
+  .auth-controls {
+    flex-direction: column;
+    width: 100%;
+    gap: 5px;
+  }
+  .auth-btn {
+    width: 100%;
+  }
+
   main {
     margin: 10px auto;
     padding: 0 10px;
@@ -200,10 +301,6 @@ footer {
 
   .card {
     padding: 15px;
-  }
-
-  h1 {
-    font-size: 1.8em;
   }
 
   h2 {
@@ -216,10 +313,22 @@ footer {
     font-size: 0.9em;
   }
 
+  .admin-form label {
+    width: 100%;
+    text-align: left;
+  }
+  .admin-form input,
+  .admin-form select {
+    width: 100%;
+  }
+
+  .fixture-carousel-container {
+    width: 100%; /* Allow container to take full width on mobile */
+  }
+
   .fixture-card {
-    min-width: 220px;
-    padding: 10px;
-    margin: 0 5px;
+    width: 200px; /* Adjust card width for mobile */
+    margin: 0 5px; /* Adjust margin for mobile */
   }
 
   .carousel-btn {
@@ -227,7 +336,30 @@ footer {
     font-size: 1em;
   }
 
-  .team-form-item {
+  .player-form-item {
     padding: 10px;
+  }
+}
+/* ... existing CSS ... */
+
+.danger-btn {
+  background-color: #dc3545; /* Red for destructive actions */
+  margin-left: 10px; /* Space from other buttons */
+}
+
+.danger-btn:hover {
+  background-color: #c82333; /* Darker red on hover */
+}
+
+/* Ensure buttons are properly spaced and responsive */
+.admin-form button {
+  margin-top: 10px; /* Space from inputs */
+}
+
+@media (max-width: 768px) {
+  .admin-form button {
+    width: 100%; /* Full width buttons on mobile */
+    margin-left: 0;
+    margin-bottom: 5px; /* Space between buttons */
   }
 }

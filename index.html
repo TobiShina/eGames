@@ -9,24 +9,102 @@
   </head>
   <body>
     <header>
-      <h1>eGamesNg</h1>
+      <h1>eGames League 9ja</h1>
+      <div class="auth-controls">
+        <span id="user-status"></span>
+        <button id="auth-button" class="auth-btn">Sign in with Google</button>
+      </div>
     </header>
 
     <main>
+      <section id="admin-panel" class="card" style="display: none">
+        <h2>Admin Dashboard</h2>
+        <div class="admin-section">
+          <h3>Fixture Management</h3>
+          <p>
+            Generate a full season schedule (380 matches) or clear all existing
+            fixtures.
+          </p>
+          <div class="admin-form">
+            <label for="start-fixture-date">Start Date for Season:</label>
+            <input
+              type="date"
+              id="start-fixture-date"
+              value="2025-08-01"
+            /><br />
+            <button id="generate-fixtures-btn">
+              Generate Full Fixture Schedule
+            </button>
+            <button id="delete-all-fixtures-btn" class="danger-btn">
+              Delete All Fixtures
+            </button>
+            <p id="fixture-status" style="margin-top: 10px"></p>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Manual Fixture Addition (for individual games)</h3>
+          <div class="admin-form">
+            <label for="player1-name">Player 1 Name:</label>
+            <input
+              type="text"
+              id="player1-name"
+              placeholder="e.g. PlayerA"
+            /><br />
+            <label for="player2-name">Player 2 Name:</label>
+            <input
+              type="text"
+              id="player2-name"
+              placeholder="e.g. PlayerB"
+            /><br />
+            <label for="fixture-date">Date & Time:</label>
+            <input type="datetime-local" id="fixture-date" /><br />
+            <label for="matchday">Matchday:</label>
+            <input type="number" id="matchday" value="1" /><br />
+            <button id="add-fixture-btn">Add Fixture</button>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Update Match Score</h3>
+          <p>Select a fixture to update its score.</p>
+          <div class="admin-form">
+            <label for="select-fixture">Select Fixture:</label>
+            <select id="select-fixture">
+              <option value="">-- Select a match --</option></select
+            ><br />
+            <label for="admin-player1-score">Player 1 Score:</label>
+            <input
+              type="number"
+              id="admin-player1-score"
+              min="0"
+              value="0"
+            /><br />
+            <label for="admin-player2-score">Player 2 Score:</label>
+            <input
+              type="number"
+              id="admin-player2-score"
+              min="0"
+              value="0"
+            /><br />
+            <button id="update-score-btn">Update Score</button>
+            <p id="score-update-status" style="color: green"></p>
+          </div>
+        </div>
+      </section>
+
       <section id="league-table-section" class="card">
-        <h2>eGames League</h2>
+        <h2>League Table</h2>
         <div class="table-container">
           <table id="league-table">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Team</th>
+                <th>Players</th>
                 <th>P</th>
                 <th>W</th>
                 <th>D</th>
                 <th>L</th>
-                <th>GF</th>
-                <th>GA</th>
                 <th>GD</th>
                 <th>PTS</th>
               </tr>
@@ -47,9 +125,9 @@
         </div>
       </section>
 
-      <section id="team-form-section" class="card">
-        <h2>Team Form</h2>
-        <div id="team-form-list"></div>
+      <section id="player-form-section" class="card">
+        <h2>Player Form...last 5 matches</h2>
+        <div id="player-form-list"></div>
       </section>
     </main>
 
@@ -58,6 +136,7 @@
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="eGames.js"></script>
   </body>
