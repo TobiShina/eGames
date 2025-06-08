@@ -18,7 +18,10 @@ const db = firebase.firestore();
 let allFixtures = [];
 let allPlayers = []; // Store all players from Firestore
 let currentCarouselPage = 0;
-const matchesPerPage = 10; // Display 10 matches per carousel view
+const matchesPerPage = 3; // Adjust this number based on how many cards fit in your view (e.g., 3 or 4)
+const CARD_WIDTH = 250; // Must match .fixture-card min-width in CSS
+const CARD_MARGIN_RIGHT = 20; // Must match .fixture-card margin-right in CSS
+const totalCardWidth = CARD_WIDTH + CARD_MARGIN_RIGHT; // Total space each card occupies
 
 // --- DOM Elements ---
 const authButton = document.getElementById("auth-button");
@@ -649,68 +652,147 @@ function renderLeagueTable(players) {
 }
 
 // 3. Fetch and Display Fixture Schedule (Carousel)
-function renderFixturesCarousel() {
-  const carousel = document.getElementById("fixture-carousel");
-  carousel.innerHTML = ""; // Clear existing fixtures
+function renderFixturesCarousel(initialRender = false) {
+  const carouselTrack = document.getElementById("fixture-carousel-track");
+  if (!carouselTrack) {
+    console.error("Carousel track element not found!");
+    return;
+  }
+  // Only re-populate the track with all fixtures if it's the initial render
+  // or if the content count doesn't match (e.g., fixtures added/deleted)
+  if (initialRender || carouselTrack.children.length !== allFixtures.length) {
+    carouselTrack.innerHTML = ""; // Clear existing cards
 
-  const startIndex = currentCarouselPage * matchesPerPage;
-  const endIndex = Math.min(startIndex + matchesPerPage, allFixtures.length);
+    allFixtures.forEach((fixture) => {
+      const fixtureCard = document.createElement("div");
+      fixtureCard.classList.add("fixture-card");
 
-  const fixturesToShow = allFixtures.slice(startIndex, endIndex);
+      // Determine outcome icons for player1 and player2
+      const player1IconClass = getOutcomeIconClass(
+        fixture.player1Score,
+        fixture.player2Score,
+        true
+      );
+      const player2IconClass = getOutcomeIconClass(
+        fixture.player1Score,
+        fixture.player2Score,
+        false
+      );
 
-  // This transform is now for visual effect only, not for content slicing directly
-  // If you want a smooth sliding animation, we'd need to change renderFixturesCarousel
-  // to render all fixtures and then use transform to shift them.
-  // For now, it will simply swap the content for the current page.
-  carousel.style.transform = `translateX(-${startIndex * (250 + 20)}px)`; // (Card width + margin)
-
-  // Handle case where no fixtures are available or current page becomes invalid
-  if (fixturesToShow.length === 0 && allFixtures.length > 0) {
-    if (currentCarouselPage > 0) {
-      currentCarouselPage--;
-      renderFixturesCarousel();
-      return;
-    }
+      fixtureCard.innerHTML = `
+                <p class="date-time">${formatDateTime(fixture.date)}</p>
+                <p>
+                    <span class="player-name">${fixture.player1}</span>
+                    <span class="score">${
+                      fixture.player1Score !== null ? fixture.player1Score : "-"
+                    }</span>
+                    <span class="status-icon ${player1IconClass}"></span>
+                </p>
+                <p>vs</p>
+                <p>
+                    <span class="player-name">${fixture.player2}</span>
+                    <span class="score">${
+                      fixture.player2Score !== null ? fixture.player2Score : "-"
+                    }</span>
+                    <span class="status-icon ${player2IconClass}"></span>
+                </p>
+                <p class="matchday">Matchday: ${fixture.matchday || "N/A"}</p>
+            `;
+      carouselTrack.appendChild(fixtureCard);
+    });
   }
 
-  fixturesToShow.forEach((fixture) => {
-    const fixtureCard = document.createElement("div");
-    fixtureCard.classList.add("fixture-card");
+  // Calculate the maximum number of pages
+  const maxPages = Math.ceil(allFixtures.length / matchesPerPage);
 
-    // Determine outcome icons for player1 and player2
-    const player1IconClass = getOutcomeIconClass(
-      fixture.player1Score,
-      fixture.player2Score,
-      true
-    );
-    const player2IconClass = getOutcomeIconClass(
-      fixture.player1Score,
-      fixture.player2Score,
-      false
-    );
+  // Adjust currentCarouselPage if it goes out of bounds (e.g., after deleting fixtures)
+  if (currentCarouselPage >= maxPages && maxPages > 0) {
+    currentCarouselPage = maxPages - 1;
+  } else if (maxPages === 0) {
+    // No fixtures at all
+    currentCarouselPage = 0;
+  }
 
-    fixtureCard.innerHTML = `
-            <p class="date-time">${formatDateTime(fixture.date)}</p>
-            <p>
-                <span class="player-name">${fixture.player1}</span>
-                <span class="score">${
-                  fixture.player1Score !== null ? fixture.player1Score : "-"
-                }</span>
-                <span class="status-icon ${player1IconClass}"></span>
-            </p>
-            <p>vs</p>
-            <p>
-                <span class="player-name">${fixture.player2}</span>
-                <span class="score">${
-                  fixture.player2Score !== null ? fixture.player2Score : "-"
-                }</span>
-                <span class="status-icon ${player2IconClass}"></span>
-            </p>
-            <p class="matchday">Matchday: ${fixture.matchday || "N/A"}</p>
-        `;
-    carousel.appendChild(fixtureCard);
-  });
+  // Calculate the transform value to shift the carousel track
+  // This creates the smooth sliding effect
+  const offset = -currentCarouselPage * matchesPerPage * totalCardWidth;
+  carouselTrack.style.transform = `translateX(${offset}px)`;
 }
+
+// --- Initial Load & Real-time Listeners ---
+document.addEventListener("DOMContentLoaded", () => {
+  // Set default date for fixture generation to tomorrow (or today if for testing)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(15, 0, 0, 0); // Set to 3 PM
+  startFixtureDateInput.value = tomorrow.toISOString().split("T")[0];
+
+  // Listen for real-time updates to players collection
+  db.collection("players").onSnapshot(
+    (snapshot) => {
+      const players = [];
+      snapshot.forEach((doc) => {
+        players.push({ id: doc.id, ...doc.data() });
+      });
+      allPlayers = players; // Store for admin use (e.g., player existence check)
+      renderLeagueTable(players);
+      renderPlayerForm(players);
+    },
+    (error) => {
+      console.error("Error fetching players:", error);
+    }
+  );
+
+  // Listen for real-time updates to fixtures collection
+  db.collection("fixtures")
+    .orderBy("date", "asc")
+    .onSnapshot(
+      (snapshot) => {
+        allFixtures = [];
+        snapshot.forEach((doc) => {
+          allFixtures.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Determine current carousel page to show upcoming matches first
+        let firstUpcomingIndex = allFixtures.findIndex((f) => !f.played);
+        if (firstUpcomingIndex === -1) {
+          // All matches played, go to last page
+          currentCarouselPage = Math.floor(
+            (allFixtures.length - 1) / matchesPerPage
+          );
+          if (currentCarouselPage < 0) currentCarouselPage = 0; // Handle case with no fixtures
+        } else {
+          // Set carousel page to show the first upcoming match at the start of a block
+          currentCarouselPage = Math.floor(firstUpcomingIndex / matchesPerPage);
+        }
+
+        renderFixturesCarousel(true); // Pass true to trigger full re-population of track
+        // If admin is logged in, refresh the dropdown
+        if (auth.currentUser) {
+          fetchAndPopulateFixturesForAdmin();
+        }
+      },
+      (error) => {
+        console.error("Error fetching fixtures:", error);
+      }
+    );
+
+  // Carousel navigation - these now just update the page and re-apply transform
+  document.getElementById("prev-fixtures").addEventListener("click", () => {
+    if (currentCarouselPage > 0) {
+      currentCarouselPage--;
+      renderFixturesCarousel(); // No 'true' needed, just move existing content
+    }
+  });
+
+  document.getElementById("next-fixtures").addEventListener("click", () => {
+    const maxPages = Math.ceil(allFixtures.length / matchesPerPage);
+    if (currentCarouselPage < maxPages - 1) {
+      currentCarouselPage++;
+      renderFixturesCarousel(); // No 'true' needed, just move existing content
+    }
+  });
+});
 
 // 4. Fetch and Display Player Form
 function renderPlayerForm(players) {

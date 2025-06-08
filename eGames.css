@@ -363,3 +363,41 @@ footer {
     margin-bottom: 5px; /* Space between buttons */
   }
 }
+
+/* Carousel Container (Viewport) */
+#fixture-carousel {
+  width: 100%;
+  overflow: hidden; /* This hides the items that are off-screen */
+  white-space: nowrap; /* Prevents items from wrapping */
+  position: relative; /* Needed for absolute positioning if using arrows inside */
+}
+
+/* Carousel Track (holds all items and slides) */
+#fixture-carousel-track {
+  display: flex; /* Arranges fixture cards in a row */
+  transition: transform 0.5s ease-in-out; /* Smooth transition for sliding */
+  /* Remove min-width for track, it will expand with content */
+  width: fit-content; /* Let the content determine its width */
+}
+
+/* Individual Fixture Card */
+.fixture-card {
+  min-width: 250px; /* Ensures each card has a consistent width */
+  margin-right: 20px; /* Space between cards */
+  flex-shrink: 0; /* Prevents cards from shrinking */
+  background-color: #333;
+  color: #eee;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: inline-block; /* Makes it work with flex for older browsers maybe */
+  vertical-align: top; /* Align items at the top */
+  /* Other existing styles for fixture-card remain */
+}
+
+/* Ensure the last card doesn't have right margin if desired */
+/* This specific selector might need adjustment based on how many cards are visible */
+/* .fixture-card:last-child {
+    margin-right: 0;
+} */
