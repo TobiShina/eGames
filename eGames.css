@@ -401,3 +401,119 @@ footer {
 /* .fixture-card:last-child {
     margin-right: 0;
 } */
+
+/* Live Broadcast Section */
+#live-broadcast-section .caption {
+  font-style: italic;
+  color: #6c757d;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#live-streams-list {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(250px, 1fr)
+  ); /* Responsive grid */
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.live-stream-item {
+  background-color: #f8f9fa;
+  border: 1px solid #e2e6ea;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.live-stream-item a {
+  color: #007bff; /* Blue link color */
+  text-decoration: none;
+  font-weight: bold;
+  flex-grow: 1; /* Allow link to take available space */
+  white-space: nowrap; /* Prevent wrapping name */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if name is too long */
+}
+
+.live-stream-item a:hover {
+  text-decoration: underline;
+  color: #0056b3; /* Darker blue on hover */
+}
+
+.live-stream-item .fa-tv {
+  color: #28a745; /* Green TV icon */
+  margin-left: 10px;
+  font-size: 1.2em;
+}
+
+/* Mobile responsiveness adjustments for this section */
+@media (max-width: 768px) {
+  #live-streams-list {
+    grid-template-columns: 1fr; /* Stack items vertically on small screens */
+  }
+  .live-stream-item {
+    flex-direction: row; /* Keep as row, but allow content to wrap */
+    flex-wrap: wrap;
+    text-align: left;
+  }
+  .live-stream-item a {
+    flex-basis: calc(100% - 30px); /* Give space for icon */
+  }
+  .live-stream-item .fa-tv {
+    margin-left: auto; /* Push icon to the right */
+    margin-top: 0;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.box {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  transform-style: preserve-3d;
+  animation: animate 20s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(360deg);
+  }
+}
+
+.box span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--i) * 45deg)) translateZ(400px);
+  -webkit-box-reflect: below 0px
+    linear-gradient(transparent, transparent, #0004);
+}
+
+.box span img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border: 2px solid white;
+  border-radius: 18px;
+  height: 100%;
+  object-fit: cover;
+}

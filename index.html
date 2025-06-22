@@ -12,6 +12,11 @@
       sizes="32x32"
       href="/Asset/eGamesNG black.png"
     />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
   </head>
   <body>
     <header>
@@ -21,7 +26,32 @@
         <button id="auth-button" class="auth-btn">Admin</button>
       </div>
     </header>
-
+    <div class="box">
+      <span style="--i: 1"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 2"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 3"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 4"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 5"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 6"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 7"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+      <span style="--i: 8"
+        ><img src="Asset/Footy x Tech rm-02.jpg" alt=""
+      /></span>
+    </div>
     <main>
       <section id="admin-panel" class="card" style="display: none">
         <h2>Admin Dashboard</h2>
@@ -134,6 +164,15 @@
       <section id="player-form-section" class="card">
         <h2>PLAYER FORM...last 5 matches</h2>
         <div id="player-form-list"></div>
+      </section>
+
+      <!-- NEW SECTION: Live Broadcast -->
+      <section id="live-broadcast-section" class="card">
+        <h2>Live Broadcast</h2>
+        <p class="caption">Link to watch any of the pros live match</p>
+        <div id="live-streams-list">
+          <!-- Live stream links will be inserted here by JavaScript -->
+        </div>
       </section>
     </main>
 

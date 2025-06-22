@@ -45,6 +45,33 @@ const deleteAllFixturesBtn = document.getElementById("delete-all-fixtures-btn");
 const startFixtureDateInput = document.getElementById("start-fixture-date");
 const fixtureStatus = document.getElementById("fixture-status");
 
+// --- NEW: Function to render Live Broadcast section ---
+function renderLiveBroadcast(players) {
+  const liveStreamsList = document.getElementById("live-streams-list");
+  liveStreamsList.innerHTML = ""; // Clear existing list
+
+  // Sort players alphabetically by name for consistent display
+  players.sort((a, b) => a.name.localeCompare(b.name));
+
+  players.forEach((player) => {
+    if (player.twitchUrl) {
+      // Only show players who have a Twitch URL
+      const streamItem = document.createElement("div");
+      streamItem.classList.add("live-stream-item");
+
+      streamItem.innerHTML = `
+                <a href="${player.twitchUrl}" target="_blank" rel="noopener noreferrer">${player.name}</a>
+                <i class="fas fa-tv"></i>
+            `;
+      liveStreamsList.appendChild(streamItem);
+    }
+  });
+  // If no players have twitch URLs, display a message
+  if (liveStreamsList.children.length === 0) {
+    liveStreamsList.innerHTML = `<p style="text-align: center; color: #6c757d;">No live streams available yet. Admins can add Twitch URLs to player profiles.</p>`;
+  }
+}
+
 // --- Authentication Functions ---
 auth.onAuthStateChanged((user) => {
   if (user) {
@@ -727,7 +754,7 @@ document.addEventListener("DOMContentLoaded", () => {
   tomorrow.setHours(15, 0, 0, 0); // Set to 3 PM
   startFixtureDateInput.value = tomorrow.toISOString().split("T")[0];
 
-  // Listen for real-time updates to players collection
+  // Listen for real-time updates to players collection (MODIFIED)
   db.collection("players").onSnapshot(
     (snapshot) => {
       const players = [];
@@ -737,6 +764,7 @@ document.addEventListener("DOMContentLoaded", () => {
       allPlayers = players; // Store for admin use (e.g., player existence check)
       renderLeagueTable(players);
       renderPlayerForm(players);
+      renderLiveBroadcast(players); // <--- NEW CALL: Render the live broadcast section
     },
     (error) => {
       console.error("Error fetching players:", error);
