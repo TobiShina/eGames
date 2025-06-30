@@ -13,6 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // Global variables
 let allFixtures = [];
@@ -22,6 +23,7 @@ const matchesPerPage = 3; // Adjust this number based on how many cards fit in y
 const CARD_WIDTH = 250; // Must match .fixture-card min-width in CSS
 const CARD_MARGIN_RIGHT = 20; // Must match .fixture-card margin-right in CSS
 const totalCardWidth = CARD_WIDTH + CARD_MARGIN_RIGHT; // Total space each card occupies
+let currentLoggedInUser = null; // To store logged in user's data for likes/comments
 
 // --- DOM Elements ---
 const authButton = document.getElementById("auth-button");
@@ -44,6 +46,38 @@ const generateFixturesBtn = document.getElementById("generate-fixtures-btn");
 const deleteAllFixturesBtn = document.getElementById("delete-all-fixtures-btn");
 const startFixtureDateInput = document.getElementById("start-fixture-date");
 const fixtureStatus = document.getElementById("fixture-status");
+
+// --- DOM Elements (NEW Blog Related) ---
+const leagueBtn = document.getElementById("league-btn");
+const blogBtn = document.getElementById("blog-btn");
+const leagueContent = document.getElementById("league-content");
+const blogSection = document.getElementById("blog-section");
+const adminBlogPanel = document.getElementById("admin-blog-panel");
+const blogTitleInput = document.getElementById("blog-title");
+const blogImageInput = document.getElementById("blog-image");
+const imagePreview = document.getElementById("image-preview");
+const blogContentInput = document.getElementById("blog-content");
+const postBlogBtn = document.getElementById("post-blog-btn");
+const blogStatus = document.getElementById("blog-status");
+const blogPostsContainer = document.getElementById("blog-posts-container");
+
+// Modal Elements
+const blogPostModal = document.getElementById("blog-post-modal");
+const modalCloseButton = blogPostModal.querySelector(".close-button");
+const modalBlogTitle = document.getElementById("modal-blog-title");
+const modalBlogTimestamp = document.getElementById("modal-blog-timestamp");
+const modalBlogImage = document.getElementById("modal-blog-image");
+const modalBlogContent = document.getElementById("modal-blog-content");
+const shareBlogBtn = document.getElementById("share-blog-btn");
+const likeBlogBtn = document.getElementById("like-blog-btn");
+const likeCountSpan = document.getElementById("like-count");
+const commentsList = document.getElementById("comments-list");
+const commentInput = document.getElementById("comment-input");
+const commentWordCount = document.getElementById("comment-word-count");
+const postCommentBtn = document.getElementById("post-comment-btn");
+const commentStatus = document.getElementById("comment-status");
+
+let currentOpenedBlogPostId = null; // To keep track of which blog post is open in the modal
 
 // --- NEW: Function to render Live Broadcast section ---
 function renderLiveBroadcast(players) {
@@ -74,17 +108,21 @@ function renderLiveBroadcast(players) {
 
 // --- Authentication Functions ---
 auth.onAuthStateChanged((user) => {
+  currentLoggedInUser = user; // Store the user object globally
   if (user) {
-    userStatusSpan.textContent = `Logged in as: ${user.displayName}`;
+    userStatusSpan.textContent = `Logged in as: ${
+      user.displayName || user.email
+    }`;
     authButton.textContent = "Sign Out";
-    adminPanel.style.display = "block"; // Show admin panel
-    fetchAndPopulateFixturesForAdmin(); // Populate dropdown for score updates
+    // Check if admin and show panels
+    checkAdminStatusAndShowPanels();
   } else {
     userStatusSpan.textContent = "Not logged in";
     authButton.textContent = "Sign in with Google";
-    adminPanel.style.display = "none"; // Hide admin panel
+    adminPanel.style.display = "none";
+    adminBlogPanel.style.display = "none"; // Hide admin blog panel
     selectFixtureDropdown.innerHTML =
-      '<option value="">-- Select a match --</option>'; // Clear dropdown
+      '<option value="">-- Select a match --</option>';
   }
 });
 
@@ -105,7 +143,11 @@ authButton.addEventListener("click", () => {
     auth
       .signInWithPopup(provider)
       .then((result) => {
-        console.log("User signed in:", result.user.displayName);
+        console.log(
+          "User signed in:",
+          result.user.displayName || result.user.email
+        );
+        // checkAdminStatusAndShowPanels() will be called by onAuthStateChanged
       })
       .catch((error) => {
         console.error("Sign in error:", error);
@@ -113,6 +155,34 @@ authButton.addEventListener("click", () => {
       });
   }
 });
+
+// Helper to check admin status (from rules, not just auth state)
+async function checkAdminStatus() {
+  if (!currentLoggedInUser) return false;
+  try {
+    // Attempt to read from the 'admins' collection for the current user's UID
+    const adminDoc = await db
+      .collection("admins")
+      .doc(currentLoggedInUser.uid)
+      .get();
+    return adminDoc.exists;
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
+}
+
+async function checkAdminStatusAndShowPanels() {
+  const isAdmin = await checkAdminStatus();
+  if (isAdmin) {
+    adminPanel.style.display = "block";
+    adminBlogPanel.style.display = "block";
+    fetchAndPopulateFixturesForAdmin();
+  } else {
+    adminPanel.style.display = "none";
+    adminBlogPanel.style.display = "none";
+  }
+}
 
 // --- Helper Functions ---
 
@@ -140,6 +210,21 @@ function formatDateTime(timestamp) {
   const options = {
     year: "numeric",
     month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+  return date.toLocaleString("en-US", options);
+}
+
+function formatBlogTimestamp(timestamp) {
+  if (!timestamp || typeof timestamp.toDate !== "function") {
+    return "N/A";
+  }
+  const date = timestamp.toDate();
+  const options = {
+    year: "numeric",
+    month: "long",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
@@ -746,25 +831,421 @@ function renderFixturesCarousel(initialRender = false) {
   carouselTrack.style.transform = `translateX(${offset}px)`;
 }
 
-// --- Initial Load & Real-time Listeners ---
+// --- NEW: Blog Section Functions ---
+
+// Main navigation function
+function showSection(sectionId) {
+  const sections = document.querySelectorAll(".content-section");
+  sections.forEach((section) => {
+    section.classList.remove("active-content");
+    section.style.display = "none"; // Ensure it's truly hidden
+  });
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.classList.add("active-content");
+    targetSection.style.display = "block"; // Or 'flex' if you use flex container
+  }
+
+  // Update active button
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach((btn) => btn.classList.remove("active-nav-btn"));
+  if (sectionId === "league-content") {
+    leagueBtn.classList.add("active-nav-btn");
+  } else if (sectionId === "blog-section") {
+    blogBtn.classList.add("active-nav-btn");
+  }
+}
+
+// Render blog posts list
+function renderBlogPosts(blogPosts) {
+  blogPostsContainer.innerHTML = ""; // Clear existing posts
+
+  if (blogPosts.length === 0) {
+    blogPostsContainer.innerHTML = `<p style="text-align: center; color: #6c757d;">No blog posts published yet.</p>`;
+    return;
+  }
+
+  // Sort by timestamp, latest first
+  blogPosts.sort(
+    (a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime()
+  );
+
+  blogPosts.forEach((post) => {
+    const postCard = document.createElement("div");
+    postCard.classList.add("blog-post-card");
+    postCard.dataset.postId = post.id; // Store Firestore document ID
+
+    postCard.innerHTML = `
+            ${
+              post.imageUrl
+                ? `<img src="${post.imageUrl}" alt="${post.title}">`
+                : ""
+            }
+            <div class="blog-post-card-content">
+                <h3>${post.title}</h3>
+                <p class="timestamp">By ${
+                  post.authorEmail || "Admin"
+                } on ${formatBlogTimestamp(post.timestamp)}</p>
+                <p>${post.content.substring(0, 150)}...</p>
+            </div>
+        `;
+    postCard.addEventListener("click", () => openBlogPostModal(post));
+    blogPostsContainer.appendChild(postCard);
+  });
+}
+
+// Open individual blog post modal
+async function openBlogPostModal(post) {
+  currentOpenedBlogPostId = post.id; // Set current post ID for comments/likes
+  modalBlogTitle.textContent = post.title;
+  modalBlogTimestamp.textContent = `By ${
+    post.authorEmail || "Admin"
+  } on ${formatBlogTimestamp(post.timestamp)}`;
+  modalBlogImage.src =
+    post.imageUrl || "https://placehold.co/800x400/cccccc/333333?text=No+Image";
+  modalBlogImage.style.display = post.imageUrl ? "block" : "none";
+  modalBlogContent.textContent = post.content; // Use textContent to preserve line breaks from textarea
+
+  // Like button state
+  if (
+    currentLoggedInUser &&
+    post.likes &&
+    post.likes.includes(currentLoggedInUser.uid)
+  ) {
+    likeBlogBtn.classList.add("liked");
+    likeBlogBtn.innerHTML = `<i class="fas fa-heart"></i> <span id="like-count">${post.likes.length}</span> Likes`;
+  } else {
+    likeBlogBtn.classList.remove("liked");
+    likeBlogBtn.innerHTML = `<i class="far fa-heart"></i> <span id="like-count">${
+      post.likes ? post.likes.length : 0
+    }</span> Likes`;
+  }
+
+  // Reset comment form
+  commentInput.value = "";
+  commentWordCount.textContent = "0/30 words";
+  commentStatus.textContent = "";
+  postCommentBtn.disabled = false;
+
+  // Load comments for this post
+  renderComments(post.id);
+
+  blogPostModal.style.display = "block";
+}
+
+// Close modal
+modalCloseButton.addEventListener("click", () => {
+  blogPostModal.style.display = "none";
+  currentOpenedBlogPostId = null;
+});
+
+// Close modal if click outside content
+window.addEventListener("click", (event) => {
+  if (event.target === blogPostModal) {
+    blogPostModal.style.display = "none";
+    currentOpenedBlogPostId = null;
+  }
+});
+
+// Share functionality
+shareBlogBtn.addEventListener("click", async () => {
+  const post = allBlogPosts.find((p) => p.id === currentOpenedBlogPostId);
+  if (!post) return;
+
+  const shareUrl =
+    window.location.origin + window.location.pathname + `?blogPost=${post.id}`; // Example share URL
+  const shareData = {
+    title: post.title,
+    text: post.content.substring(0, 100) + "...",
+    url: shareUrl,
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      console.log("Blog post shared successfully");
+    } catch (error) {
+      console.error("Error sharing:", error);
+      // Fallback for desktop: copy to clipboard
+      fallbackCopyToClipboard(shareUrl);
+    }
+  } else {
+    // Fallback for browsers without Web Share API
+    fallbackCopyToClipboard(shareUrl);
+  }
+});
+
+function fallbackCopyToClipboard(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed"; // Avoid scrolling to bottom
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    const successful = document.execCommand("copy");
+    const msg = successful
+      ? "Link copied to clipboard!"
+      : "Failed to copy link.";
+    alert(msg);
+  } catch (err) {
+    console.error("Fallback: Oops, unable to copy", err);
+    alert("Could not copy link to clipboard.");
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+// Like functionality
+likeBlogBtn.addEventListener("click", async () => {
+  if (!currentLoggedInUser) {
+    alert("Please sign in to like this post.");
+    return;
+  }
+  if (!currentOpenedBlogPostId) return;
+
+  const blogPostRef = db.collection("blogPosts").doc(currentOpenedBlogPostId);
+  try {
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(blogPostRef);
+      if (!doc.exists) {
+        console.error("Blog post not found!");
+        return;
+      }
+
+      const currentLikes = doc.data().likes || [];
+      const userUid = currentLoggedInUser.uid;
+      let newLikes = [...currentLikes];
+
+      if (newLikes.includes(userUid)) {
+        // User already liked, so unlike
+        newLikes = newLikes.filter((uid) => uid !== userUid);
+      } else {
+        // User hasn't liked, so like
+        newLikes.push(userUid);
+      }
+      transaction.update(blogPostRef, { likes: newLikes });
+    });
+    // UI will update automatically via onSnapshot listener
+  } catch (error) {
+    console.error("Error liking/unliking post:", error);
+    alert("Failed to update like status. Please try again.");
+  }
+});
+
+// Comment functionality
+commentInput.addEventListener("input", () => {
+  const text = commentInput.value.trim();
+  const words = text.split(/\s+/).filter((word) => word.length > 0); // Split by whitespace, filter empty strings
+  const wordCount = words.length;
+  commentWordCount.textContent = `${wordCount}/30 words`;
+
+  if (wordCount > 30) {
+    commentWordCount.style.color = "red";
+    postCommentBtn.disabled = true;
+  } else {
+    commentWordCount.style.color = "#777";
+    postCommentBtn.disabled = false;
+  }
+  // Also consider character limit for display purposes if words are very long
+  if (text.length > 180) {
+    // MaxLength is 180 chars, equivalent to roughly 30 words * 6 chars/word
+    commentInput.value = text.substring(0, 180); // Truncate if exceeds
+  }
+});
+
+postCommentBtn.addEventListener("click", async () => {
+  if (!currentLoggedInUser) {
+    alert("Please sign in to leave a comment.");
+    return;
+  }
+  if (!currentOpenedBlogPostId) return;
+
+  const commentText = commentInput.value.trim();
+  const words = commentText.split(/\s+/).filter((word) => word.length > 0);
+  if (words.length === 0) {
+    commentStatus.textContent = "Comment cannot be empty.";
+    commentStatus.style.color = "red";
+    return;
+  }
+  if (words.length > 30) {
+    commentStatus.textContent = "Comment exceeds 30 words.";
+    commentStatus.style.color = "red";
+    return;
+  }
+
+  postCommentBtn.disabled = true;
+  commentStatus.textContent = "Posting comment...";
+  commentStatus.style.color = "blue";
+
+  try {
+    await db
+      .collection("blogPosts")
+      .doc(currentOpenedBlogPostId)
+      .collection("comments")
+      .add({
+        commentText: commentText,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        userUid: currentLoggedInUser.uid, // Store UID, but display is anonymous
+      });
+    commentInput.value = ""; // Clear input
+    commentWordCount.textContent = "0/30 words";
+    commentStatus.textContent = "Comment posted!";
+    commentStatus.style.color = "green";
+    // Comments will auto-refresh via onSnapshot
+  } catch (error) {
+    console.error("Error posting comment:", error);
+    commentStatus.textContent = "Failed to post comment. " + error.message;
+    commentStatus.style.color = "red";
+  } finally {
+    postCommentBtn.disabled = false;
+  }
+});
+
+// Render comments for a specific post
+function renderComments(postId) {
+  commentsList.innerHTML =
+    '<p style="text-align: center; color: #6c757d;">Loading comments...</p>';
+
+  db.collection("blogPosts")
+    .doc(postId)
+    .collection("comments")
+    .orderBy("timestamp", "asc")
+    .onSnapshot(
+      (snapshot) => {
+        commentsList.innerHTML = ""; // Clear existing comments
+        if (snapshot.empty) {
+          commentsList.innerHTML =
+            '<p style="text-align: center; color: #6c757d;">No comments yet. Be the first to comment!</p>';
+          return;
+        }
+        snapshot.forEach((doc) => {
+          const comment = doc.data();
+          const commentItem = document.createElement("div");
+          commentItem.classList.add("comment-item");
+          // Display comments anonymously
+          commentItem.innerHTML = `
+                    <p>${comment.commentText}</p>
+                    <p class="comment-timestamp">${
+                      comment.timestamp
+                        ? formatDateTime(comment.timestamp)
+                        : "Just now"
+                    }</p>
+                `;
+          commentsList.appendChild(commentItem);
+        });
+        commentsList.scrollTop = commentsList.scrollHeight; // Scroll to bottom
+      },
+      (error) => {
+        console.error("Error fetching comments:", error);
+        commentsList.innerHTML = `<p style="text-align: center; color: red;">Error loading comments.</p>`;
+      }
+    );
+}
+
+// --- Admin Blog Post Creation ---
+
+blogImageInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.src = e.target.result;
+      imagePreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+  }
+});
+
+postBlogBtn.addEventListener("click", async () => {
+  if (!currentLoggedInUser) {
+    alert("Please sign in as admin to post a blog.");
+    return;
+  }
+
+  const title = blogTitleInput.value.trim();
+  const content = blogContentInput.value.trim();
+  const imageFile = blogImageInput.files[0];
+
+  if (!title || !content) {
+    alert("Please fill in both title and content.");
+    return;
+  }
+
+  postBlogBtn.disabled = true;
+  blogStatus.style.color = "blue";
+  blogStatus.textContent = "Posting blog...";
+
+  let imageUrl = "";
+  try {
+    if (imageFile) {
+      blogStatus.textContent = "Uploading image...";
+      const storageRef = storage.ref(
+        `blog_images/${Date.now()}_${imageFile.name}`
+      );
+      const snapshot = await storageRef.put(imageFile);
+      imageUrl = await snapshot.ref.getDownloadURL();
+      blogStatus.textContent = "Image uploaded. Saving post...";
+    }
+
+    await db.collection("blogPosts").add({
+      title: title,
+      content: content,
+      imageUrl: imageUrl,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      authorUid: currentLoggedInUser.uid,
+      authorEmail: currentLoggedInUser.email,
+      likes: [], // Initialize with empty likes array
+    });
+
+    blogStatus.textContent = "Blog post published successfully!";
+    blogStatus.style.color = "green";
+    blogTitleInput.value = "";
+    blogContentInput.value = "";
+    blogImageInput.value = ""; // Clear file input
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+  } catch (error) {
+    console.error("Error posting blog:", error);
+    blogStatus.textContent = "Error posting blog: " + error.message;
+    blogStatus.style.color = "red";
+  } finally {
+    postBlogBtn.disabled = false;
+  }
+});
+
+// --- Initial Load & Real-time Listeners (MODIFIED for Blog) ---
+let allBlogPosts = []; // Global array to hold all blog posts
+
 document.addEventListener("DOMContentLoaded", () => {
+  // Initial section display
+  showSection("league-content");
+
+  // Header nav button listeners
+  leagueBtn.addEventListener("click", () => showSection("league-content"));
+  blogBtn.addEventListener("click", () => showSection("blog-section"));
+
   // Set default date for fixture generation to tomorrow (or today if for testing)
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(15, 0, 0, 0); // Set to 3 PM
   startFixtureDateInput.value = tomorrow.toISOString().split("T")[0];
 
-  // Listen for real-time updates to players collection (MODIFIED)
+  // Listen for real-time updates to players collection
   db.collection("players").onSnapshot(
     (snapshot) => {
       const players = [];
       snapshot.forEach((doc) => {
         players.push({ id: doc.id, ...doc.data() });
       });
-      allPlayers = players; // Store for admin use (e.g., player existence check)
+      allPlayers = players;
       renderLeagueTable(players);
       renderPlayerForm(players);
-      renderLiveBroadcast(players); // <--- NEW CALL: Render the live broadcast section
+      renderLiveBroadcast(players);
     },
     (error) => {
       console.error("Error fetching players:", error);
@@ -781,27 +1262,75 @@ document.addEventListener("DOMContentLoaded", () => {
           allFixtures.push({ id: doc.id, ...doc.data() });
         });
 
-        // Determine current carousel page to show upcoming matches first
         let firstUpcomingIndex = allFixtures.findIndex((f) => !f.played);
         if (firstUpcomingIndex === -1) {
-          // All matches played, go to last page
           currentCarouselPage = Math.floor(
             (allFixtures.length - 1) / matchesPerPage
           );
-          if (currentCarouselPage < 0) currentCarouselPage = 0; // Handle case with no fixtures
+          if (currentCarouselPage < 0) currentCarouselPage = 0;
         } else {
-          // Set carousel page to show the first upcoming match at the start of a block
           currentCarouselPage = Math.floor(firstUpcomingIndex / matchesPerPage);
         }
 
-        renderFixturesCarousel(true); // Pass true to trigger full re-population of track
-        // If admin is logged in, refresh the dropdown
+        renderFixturesCarousel(true);
         if (auth.currentUser) {
           fetchAndPopulateFixturesForAdmin();
         }
       },
       (error) => {
         console.error("Error fetching fixtures:", error);
+      }
+    );
+
+  // Listen for real-time updates to blogPosts collection (NEW)
+  db.collection("blogPosts")
+    .orderBy("timestamp", "desc")
+    .onSnapshot(
+      (snapshot) => {
+        allBlogPosts = []; // Clear global array
+        snapshot.forEach((doc) => {
+          allBlogPosts.push({ id: doc.id, ...doc.data() });
+        });
+        renderBlogPosts(allBlogPosts);
+
+        // If a modal is open for a post that just got updated (e.g., liked), re-render it
+        if (currentOpenedBlogPostId) {
+          const updatedPost = allBlogPosts.find(
+            (p) => p.id === currentOpenedBlogPostId
+          );
+          if (updatedPost) {
+            // Keep the modal open, just update its content
+            modalBlogTitle.textContent = updatedPost.title;
+            modalBlogTimestamp.textContent = `By ${
+              updatedPost.authorEmail || "Admin"
+            } on ${formatBlogTimestamp(updatedPost.timestamp)}`;
+            modalBlogImage.src =
+              updatedPost.imageUrl ||
+              "https://placehold.co/800x400/cccccc/333333?text=No+Image";
+            modalBlogImage.style.display = updatedPost.imageUrl
+              ? "block"
+              : "none";
+            modalBlogContent.textContent = updatedPost.content;
+
+            if (
+              currentLoggedInUser &&
+              updatedPost.likes &&
+              updatedPost.likes.includes(currentLoggedInUser.uid)
+            ) {
+              likeBlogBtn.classList.add("liked");
+              likeBlogBtn.innerHTML = `<i class="fas fa-heart"></i> <span id="like-count">${updatedPost.likes.length}</span> Likes`;
+            } else {
+              likeBlogBtn.classList.remove("liked");
+              likeBlogBtn.innerHTML = `<i class="far fa-heart"></i> <span id="like-count">${
+                updatedPost.likes ? updatedPost.likes.length : 0
+              }</span> Likes`;
+            }
+          }
+        }
+      },
+      (error) => {
+        console.error("Error fetching blog posts:", error);
+        blogPostsContainer.innerHTML = `<p style="text-align: center; color: red;">Error loading blog posts.</p>`;
       }
     );
 

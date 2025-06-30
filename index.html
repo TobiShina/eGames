@@ -21,6 +21,10 @@
   <body>
     <header>
       <h1>eGames League 9ja</h1>
+      <div class="header-nav">
+        <button id="league-btn" class="nav-btn active-nav-btn">League</button>
+        <button id="blog-btn" class="nav-btn">Blog</button>
+      </div>
       <div class="auth-controls">
         <span id="user-status"></span>
         <button id="auth-button" class="auth-btn">Admin</button>
@@ -37,127 +41,223 @@
       <span style="--i: 8"><img src="Asset/Baji Jr.jpg" alt="" /></span>
     </div>
     <main>
-      <section id="admin-panel" class="card" style="display: none">
-        <h2>Admin Dashboard</h2>
-        <div class="admin-section">
-          <h3>Fixture Management</h3>
-          <p>
-            Generate a full season schedule (380 matches) or clear all existing
-            fixtures.
-          </p>
-          <div class="admin-form">
-            <label for="start-fixture-date">Start Date for Season:</label>
-            <input
-              type="date"
-              id="start-fixture-date"
-              value="2025-08-01"
-            /><br />
-            <button id="generate-fixtures-btn">
-              Generate Full Fixture Schedule
-            </button>
-            <button id="delete-all-fixtures-btn" class="danger-btn">
-              Delete All Fixtures
-            </button>
-            <p id="fixture-status" style="margin-top: 10px"></p>
+      <!-- Main content wrapper to toggle visibility -->
+      <div id="league-content" class="content-section active-content">
+        <!-- Admin Panel (conditionally visible) -->
+        <section id="admin-panel" class="card" style="display: none">
+          <h2>Admin Dashboard</h2>
+          <div class="admin-section">
+            <h3>Fixture Management</h3>
+            <p>
+              Generate a full season schedule (380 matches) or clear all
+              existing fixtures.
+            </p>
+            <div class="admin-form">
+              <label for="start-fixture-date">Start Date for Season:</label>
+              <input
+                type="date"
+                id="start-fixture-date"
+                value="2025-08-01"
+              /><br />
+              <button id="generate-fixtures-btn">
+                Generate Full Fixture Schedule
+              </button>
+              <button id="delete-all-fixtures-btn" class="danger-btn">
+                Delete All Fixtures
+              </button>
+              <p id="fixture-status" style="margin-top: 10px"></p>
+            </div>
           </div>
-        </div>
 
-        <div class="admin-section">
-          <h3>Manual Fixture Addition (for individual games)</h3>
+          <div class="admin-section">
+            <h3>Manual Fixture Addition (for individual games)</h3>
+            <div class="admin-form">
+              <label for="player1-name">Player 1 Name:</label>
+              <input
+                type="text"
+                id="player1-name"
+                placeholder="e.g. PlayerA"
+              /><br />
+              <label for="player2-name">Player 2 Name:</label>
+              <input
+                type="text"
+                id="player2-name"
+                placeholder="e.g. PlayerB"
+              /><br />
+              <label for="fixture-date">Date & Time:</label>
+              <input type="datetime-local" id="fixture-date" /><br />
+              <label for="matchday">Matchday:</label>
+              <input type="number" id="matchday" value="1" /><br />
+              <button id="add-fixture-btn">Add Fixture</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h3>Update Match Score</h3>
+            <p>Select a fixture to update its score.</p>
+            <div class="admin-form">
+              <label for="select-fixture">Select Fixture:</label>
+              <select id="select-fixture">
+                <option value="">-- Select a match --</option></select
+              ><br />
+              <label for="admin-player1-score">Player 1 Score:</label>
+              <input
+                type="number"
+                id="admin-player1-score"
+                min="0"
+                value="0"
+              /><br />
+              <label for="admin-player2-score">Player 2 Score:</label>
+              <input
+                type="number"
+                id="admin-player2-score"
+                min="0"
+                value="0"
+              /><br />
+              <button id="update-score-btn">Update Score</button>
+              <p id="score-update-status" style="color: green"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Public sections -->
+        <section id="league-table-section" class="card">
+          <h2>League Table</h2>
+          <div class="table-container">
+            <table id="league-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Players</th>
+                  <th>P</th>
+                  <th>W</th>
+                  <th>D</th>
+                  <th>L</th>
+                  <th>GD</th>
+                  <th>PTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- League data will be inserted here by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="fixture-schedule-section" class="card">
+          <h2>Fixture Schedule</h2>
+          <div class="carousel-nav">
+            <button id="prev-fixtures" class="carousel-btn">&lt;</button>
+            <div id="fixture-carousel" class="carousel">
+              <div id="fixture-carousel-track" class="carousel-track">
+                <!-- Fixture cards will be rendered here by JavaScript -->
+              </div>
+            </div>
+            <button id="next-fixtures" class="carousel-btn">&gt;</button>
+          </div>
+        </section>
+
+        <section id="player-form-section" class="card">
+          <h2>PLAYER FORM...last 5 matches</h2>
+          <div id="player-form-list">
+            <!-- Player form will be inserted here by JavaScript -->
+          </div>
+        </section>
+
+        <!-- NEW SECTION: Live Broadcast -->
+        <section id="live-broadcast-section" class="card">
+          <h2>Live Broadcast</h2>
+          <p class="caption">Link to watch any of the pros live match</p>
+          <div id="live-streams-list">
+            <!-- Live stream links will be inserted here by JavaScript -->
+          </div>
+        </section>
+      </div>
+      <!-- End of #league-content -->
+
+      <!-- NEW BLOG SECTION -->
+      <div id="blog-section" class="content-section" style="display: none">
+        <section id="admin-blog-panel" class="card" style="display: none">
+          <h2>Admin Blog Management</h2>
+          <h3>Create New Blog Post</h3>
           <div class="admin-form">
-            <label for="player1-name">Player 1 Name:</label>
+            <label for="blog-title">Title:</label>
             <input
               type="text"
-              id="player1-name"
-              placeholder="e.g. PlayerA"
+              id="blog-title"
+              placeholder="Blog Post Title"
+              required
             /><br />
-            <label for="player2-name">Player 2 Name:</label>
-            <input
-              type="text"
-              id="player2-name"
-              placeholder="e.g. PlayerB"
+            <label for="blog-image">Image:</label>
+            <input type="file" id="blog-image" accept="image/*" /><br />
+            <img
+              id="image-preview"
+              src=""
+              alt="Image Preview"
+              style="
+                max-width: 200px;
+                max-height: 200px;
+                display: none;
+                margin-bottom: 10px;
+              "
             /><br />
-            <label for="fixture-date">Date & Time:</label>
-            <input type="datetime-local" id="fixture-date" /><br />
-            <label for="matchday">Matchday:</label>
-            <input type="number" id="matchday" value="1" /><br />
-            <button id="add-fixture-btn">Add Fixture</button>
-          </div>
-        </div>
-
-        <div class="admin-section">
-          <h3>Update Match Score</h3>
-          <p>Select a fixture to update its score.</p>
-          <div class="admin-form">
-            <label for="select-fixture">Select Fixture:</label>
-            <select id="select-fixture">
-              <option value="">-- Select a match --</option></select
+            <label for="blog-content">Content:</label>
+            <textarea
+              id="blog-content"
+              placeholder="Write your blog post content here..."
+              rows="10"
+              required
+            ></textarea
             ><br />
-            <label for="admin-player1-score">Player 1 Score:</label>
-            <input
-              type="number"
-              id="admin-player1-score"
-              min="0"
-              value="0"
-            /><br />
-            <label for="admin-player2-score">Player 2 Score:</label>
-            <input
-              type="number"
-              id="admin-player2-score"
-              min="0"
-              value="0"
-            /><br />
-            <button id="update-score-btn">Update Score</button>
-            <p id="score-update-status" style="color: green"></p>
+            <button id="post-blog-btn">Post Blog</button>
+            <p id="blog-status" style="margin-top: 10px"></p>
+          </div>
+        </section>
+
+        <section id="blog-list-section" class="card">
+          <h2>Latest News</h2>
+          <div id="blog-posts-container">
+            <!-- Blog posts will be loaded here by JavaScript -->
+            <p style="text-align: center; color: #6c757d">
+              Loading blog posts...
+            </p>
+          </div>
+        </section>
+      </div>
+      <!-- End of #blog-section -->
+
+      <!-- Individual Blog Post Modal/Overlay -->
+      <div id="blog-post-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <h2 id="modal-blog-title"></h2>
+          <p class="modal-blog-timestamp" id="modal-blog-timestamp"></p>
+          <img id="modal-blog-image" src="" alt="Blog Post Image" />
+          <div id="modal-blog-content"></div>
+          <div class="modal-actions">
+            <button id="share-blog-btn">
+              <i class="fas fa-share-alt"></i> Share
+            </button>
+            <button id="like-blog-btn">
+              <i class="far fa-heart"></i> <span id="like-count">0</span> Likes
+            </button>
+          </div>
+          <div class="comments-section">
+            <h3>Comments</h3>
+            <div id="comments-list"></div>
+            <div class="comment-form">
+              <textarea
+                id="comment-input"
+                placeholder="Leave an anonymous comment (max 30 words)"
+                maxlength="180"
+              ></textarea>
+              <span id="comment-word-count">0/30 words</span>
+              <button id="post-comment-btn">Post Comment</button>
+              <p id="comment-status" style="margin-top: 5px"></p>
+            </div>
           </div>
         </div>
-      </section>
-
-      <section id="league-table-section" class="card">
-        <h2>League Table</h2>
-        <div class="table-container">
-          <table id="league-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Players</th>
-                <th>P</th>
-                <th>W</th>
-                <th>D</th>
-                <th>L</th>
-                <th>GD</th>
-                <th>PTS</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="fixture-schedule" class="carousel-container">
-        <h2>Fixture Schedule</h2>
-        <div id="fixture-carousel" class="carousel">
-          <div id="fixture-carousel-track" class="carousel-track"></div>
-        </div>
-        <div class="carousel-nav">
-          <button id="prev-fixtures" class="nav-button">&lt;</button>
-          <button id="next-fixtures" class="nav-button">&gt;</button>
-        </div>
-      </section>
-
-      <section id="player-form-section" class="card">
-        <h2>PLAYER FORM...last 5 matches</h2>
-        <div id="player-form-list"></div>
-      </section>
-
-      <!-- NEW SECTION: Live Broadcast -->
-      <section id="live-broadcast-section" class="card">
-        <h2>Live Broadcast</h2>
-        <p class="caption">Link to watch any of the pros live match</p>
-        <div id="live-streams-list">
-          <!-- Live stream links will be inserted here by JavaScript -->
-        </div>
-      </section>
+      </div>
     </main>
 
     <footer>
@@ -167,6 +267,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="eGames.js"></script>
   </body>
 </html>
