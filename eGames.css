@@ -2,7 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* General Styles */
+/* --- Keep your existing styles here --- */
+
+/* General Styles Improvement */
+* {
+  box-sizing: border-box; /* Ensures padding doesn't break layout widths */
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -35,7 +41,7 @@ header h1 {
 }
 
 .auth-btn {
-  background-color: #28a745; /* Green button for sign-in */
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -131,7 +137,7 @@ main {
   align-items: center;
   padding: 8px 15px;
   border-top: 1px dashed #f0f0f0;
-  position: relative; /* For the live indicator */
+  position: relative;
 }
 
 .match-teams {
@@ -213,7 +219,7 @@ main {
 }
 
 .comment-content.active {
-  max-height: 500px; /* Adjust height based on expected content */
+  max-height: 500px;
   padding: 15px;
 }
 
@@ -275,7 +281,7 @@ main {
 }
 
 .like-button .fas.fa-heart {
-  color: #dc3545; /* Red heart for liked status */
+  color: #dc3545;
 }
 
 /* Comment Form */
@@ -361,6 +367,7 @@ main {
   height: 50px;
   transform-style: preserve-3d;
   animation: animate 20s linear infinite;
+  margin: 0 auto; /* Center for mobile */
 }
 
 @keyframes animate {
@@ -394,4 +401,53 @@ main {
   border-radius: 18px;
   height: 100%;
   object-fit: cover;
+}
+
+/* --- RESPONSIVE MEDIA QUERY --- */
+
+@media screen and (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .auth-controls {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .score-filter-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .score-filter-controls input[type="date"] {
+    width: 100%;
+  }
+
+  .match-item {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .match-teams {
+    width: 100%; /* Force teams to take full width on tiny screens */
+    margin-bottom: 5px;
+  }
+
+  .match-score,
+  .match-time {
+    font-size: 0.85em;
+  }
+
+  /* Shrink the 3D animation depth so it doesn't clip off the screen */
+  .box span {
+    transform: rotateY(calc(var(--i) * 45deg)) translateZ(150px);
+  }
+
+  .card {
+    padding: 15px;
+  }
 }
