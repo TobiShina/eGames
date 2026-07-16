@@ -451,3 +451,45 @@ main {
     padding: 15px;
   }
 }
+
+/* Services Banner Styles */
+#services-section {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+#services-section h1 {
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.services-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.services-list li {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+/* Tablet and Desktop */
+@media (min-width: 768px) {
+  .services-list {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .services-list li {
+    width: 30%; /* Side by side on larger screens */
+  }
+}
